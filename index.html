@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracha Capitals | Investment Platform</title>
+    
+    <!-- Підключення Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Підключення React та Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Підключення шрифтів -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #101010; color: #d1d5db; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        html { scroll-behavior: smooth; }
+        .modal-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+        input, textarea { background: #1a1a1a !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
+        input:focus, textarea:focus { border-color: #D4AF37 !important; outline: none; }
+        
+        /* Плавне поява для контенту */
+        .fade-in { animation: fadeIn 1s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Іконки
+        const MapPin = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        );
+        const ArrowUpRight = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+        );
+        const XIcon = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18M6 6l12 12"/></svg>
+        );
+
+        const dict = {
+          uk: {
+            nav: { about: 'Про компанію', strategy: 'Стратегія', portfolio: 'Портфель проєктів', contact: "Зв'язатися" },
+            hero: {
+              badge: 'ІНВЕСТИЦІЙНА ПЛАТФОРМА',
+              titleWhite: 'Оператор реальних',
+              titleGold: 'інвестицій.',
+              desc: "Поєднуємо роль девелопера, управлінця активами та фінансового посередника між власниками об'єктів та капіталом інвесторів.",
+              btnPortfolio: 'Дивитись портфель',
+              btnStrategy: 'Наша стратегія',
+            },
+            strategy: {
+              subtitle: 'Ключові переваги для інвестора',
+              title: 'Інвестиційна стратегія',
+              items: [
+                { title: 'Реальний актив', desc: 'Земля, нерухомість, інфраструктура — фізично забезпечені інвестиції.' },
+                { title: 'Дефіцит локацій', desc: 'Перша лінія моря, пам\'ятки архітектури, промислові ділянки — обмежена пропозиція.' },
+                { title: 'Повний супровід', desc: 'Bracha Capitals управляє реалізацією, юридичним оформленням та звітністю.' }
+              ]
+            },
+            portfolioTitle: 'Наші проєкти',
+            filterAll: 'Всі проєкти',
+            cta: {
+                title: "Готові до співпраці?",
+                desc: "Отримайте детальну інвестиційну пропозицію та консультацію наших експертів.",
+                btn: "Запросити деталі"
+            },
+            modal: {
+                title: "Зворотний зв'язок",
+                name: "Ваше ім'я",
+                email: "Ваш Email",
+                msg: "Повідомлення",
+                send: "Надіслати запит",
+                success: "Дякуємо! Ваш запит надіслано успішно.",
+                error: "Сталася помилка. Спробуйте пізніше."
+            }
+          },
+          en: {
+            nav: { about: 'About Us', strategy: 'Strategy', portfolio: 'Projects Portfolio', contact: "Contact Us" },
+            hero: {
+              badge: 'INVESTMENT PLATFORM',
+              titleWhite: 'Operator of real',
+              titleGold: 'investments.',
+              desc: "We combine the roles of developer, asset manager, and financial intermediary between asset owners and investor capital.",
+              btnPortfolio: 'View Portfolio',
+              btnStrategy: 'Our Strategy',
+            },
+            strategy: {
+              subtitle: 'Key investor benefits',
+              title: 'Investment Strategy',
+              items: [
+                { title: 'Real Asset', desc: 'Land, real estate, infrastructure — physically secured investments.' },
+                { title: 'Scarcity of Locations', desc: 'First coastline, architectural monuments, industrial plots — limited supply.' },
+                { title: 'Full Support', desc: 'Bracha Capitals manages implementation, legal registration, and reporting.' }
+              ]
+            },
+            portfolioTitle: 'Our Projects',
+            filterAll: 'All Projects',
+            cta: {
+                title: "Ready to cooperate?",
+                desc: "Get a detailed investment proposal and a consultation from our experts.",
+                btn: "Request details"
+            },
+            modal: {
+                title: "Contact Us",
+                name: "Your Name",
+                email: "Your Email",
+                msg: "Message",
+                send: "Send Request",
+                success: "Thank you! Your request has been sent successfully.",
+                error: "An error occurred. Please try again later."
+            }
+          }
+        };
+
+        const projects = [
+          { id: 1, image: 'images/laguna.jpg', uk: { title: 'Laguna Villas Odesa', category: 'Туристична нерухомість', location: 'Одеса · Перша лінія моря', metrics: ['10 котеджів', 'CAPEX $435K', 'Маржа 61%'], description: 'Камерний рекреаційний проєкт сучасного формату, що поєднує екологію, приватність та комфорт.' }, en: { title: 'Laguna Villas Odesa', category: 'Tourist Real Estate', location: 'Odesa · First Sea Line', metrics: ['10 cottages', 'CAPEX $435K', 'Margin 61%'], description: 'A boutique recreational project of modern format, combining ecology, privacy, and comfort.' } },
+          { id: 2, image: 'images/sea-view.jpg', uk: { title: 'Boutique Hotel Sea View Arcadia', category: 'Туристична нерухомість', location: 'Одеса · Аркадія', metrics: ['16 номерів', 'CAPEX $410K', 'DSCR > 1.5'], description: 'Бутик-готель із рестораном на першій лінії Аркадії. Кругла архітектура та скляний купол.' }, en: { title: 'Boutique Hotel Sea View Arcadia', category: 'Tourist Real Estate', location: 'Odesa · Arcadia', metrics: ['16 rooms', 'CAPEX $410K', 'DSCR > 1.5'], description: 'Boutique hotel with a restaurant on the first line of Arcadia. Round architecture and glass dome.' } },
+          { id: 3, image: 'images/luzanivka.jpg', uk: { title: 'Sea View Hotel & Spa', category: 'Туристична нерухомість', location: 'Одеса · Лузанівка', metrics: ['1.17 га', '~100 м до моря', 'Приватна власність'], description: 'Рідкісна інвестиційна можливість — земельний актив на першій береговій лінії з потенціалом SPA-курорту.' }, en: { title: 'Sea View Hotel & Spa', category: 'Tourist Real Estate', location: 'Odesa · Luzanivka', metrics: ['1.17 ha', '~100 m to sea', 'Private Property'], description: 'A rare investment opportunity — a land asset on the first coastline with the potential for a SPA resort.' } },
+          { id: 4, image: 'images/gaudi-park.jpg', uk: { title: 'Gaudi Park Apartments', category: 'Туристична нерухомість', location: 'Одеса · Фонтан', metrics: ['25 000 м²', 'ЕКО Апартаменти', '1 лінія'], description: 'Преміальні апартаменти на першій лінії Фонтану. Дефіцитна локація з максимальною ліквідністю.' }, en: { title: 'Gaudi Park Apartments', category: 'Tourist Real Estate', location: 'Odesa · Fontan', metrics: ['25 000 m²', 'ECO Apartments', '1st Line'], description: 'Premium apartments on the first line of Fontan. A scarce location with maximum liquidity.' } },
+          { id: 5, image: 'images/cheremushki.jpg', uk: { title: 'ТОРГІВЕЛЬНО-РОЗВАЖАЛЬНИЙ БІЗНЕС-ЦЕНТР', category: 'Комерційна нерухомість', location: 'Одеса · Черемушки', metrics: ['2 360 м²', '3 поверхи + підвал', 'Фасадна будівля'], description: 'Торговельно-розважальний бізцентр. Фасадна будівля вздовж ключової артерії з постійним потоком.' }, en: { title: 'SHOPPING AND ENTERTAINMENT BUSINESS CENTER', category: 'Commercial Real Estate', location: 'Odesa · Cheremushki', metrics: ['2 360 m²', '3 floors + basement', 'Facade building'], description: 'Retail and entertainment business center. A facade building along a key artery with steady traffic.' } },
+          { id: 6, image: 'images/primorskiy-5.jpg', uk: { title: 'Приморський бульвар, 5', category: 'Комерційна нерухомість', location: 'Одеса · Центр', metrics: ['2 390 м²', 'Пам\'ятка архітектури', 'Франц Боффо', '3 поверхи + мансарда'], description: 'Архітектурна домінанта Приморського бульвару. Будівля з іонічними колонами в самому серці міста.' }, en: { title: 'Primorsky Boulevard, 5', category: 'Commercial Real Estate', location: 'Odesa · Center', metrics: ['2 390 m²', 'Architectural Monument', 'Franz Boffo', '3 floors + attic'], description: 'The architectural dominant of Primorsky Boulevard. A building with Ionic columns in the heart of the city.' } },
+          { id: 7, image: 'images/greece.jpg', uk: { title: 'Residential Complex Odesa', category: 'Житлова нерухомість', location: 'Греція · Салоніки', metrics: ['12 квартир', 'ROI 33%', 'Neoi Epivates Beach'], description: 'Boutique Development у прибережній зоні Салонік. Забезпечена інвестиція в нерухомість ЄС.' }, en: { title: 'Residential Complex Odesa', category: 'Residential Real Estate', location: 'Greece · Thessaloniki', metrics: ['12 apartments', 'ROI 33%', 'Neoi Epivates Beach'], description: 'Boutique Development in the coastal zone of Thessaloniki. A secured investment in EU real estate.' } },
+          { id: 8, image: 'images/port-vera.jpg', uk: { title: 'Port Vera', category: 'Інфраструктура', location: 'поблизу порту Південний', metrics: ['~100 га', 'Глибина 18.5 м', '11 млн т/рік'], description: 'Багатофункціональна інфраструктурна платформа: Морський термінал наливних вантажів + резервуарний парк + мультимодальний логістичний вузол + індустріальний парк.' }, en: { title: 'Port Vera', category: 'Infrastructure', location: 'near Pivdennyi Port', metrics: ['~100 ha', 'Depth 18.5 m', '11 mln t/year'], description: 'Multifunctional infrastructure platform: Marine terminal for bulk liquid cargo + tank farm + multimodal logistics hub + industrial park.' } },
+          { id: 9, image: 'images/k-terminal.jpg', uk: { title: 'ІНДУСТРІАЛЬНИЙ ПАРК K-TERMINAL', category: 'Інфраструктура', location: 'Красносілка (Одеса)', metrics: ['44.9 га', 'Індустріальний парк', 'Траса E58'], description: 'Сучасний індустріальний майданчик, створений для розміщення виробничих, переробних та технологічних підприємств у безпосередній близькості до Одеси та ключових логістичних вузлів України.' }, en: { title: 'K-TERMINAL INDUSTRIAL PARK', category: 'Infrastructure', location: 'Krasnosilka (Odesa)', metrics: ['44.9 ha', 'Industrial Park', 'E58 Highway'], description: 'A modern industrial site designed for manufacturing, processing, and technology enterprises in close proximity to Odesa and Ukraine\'s key logistics hubs.' } },
+          { id: 10, image: 'images/station.jpg', uk: { title: 'Когенераційна Станція та Котельня', category: 'Енергетика', location: 'Теплодар', metrics: ['ККД 85-90%', 'Бюджет $3.4M', 'Тепло + Електрика'], description: 'Проєкт спрямований на створення локального енергетичного комплексу нового покоління, що забезпечить місто стабільною тепловою та електричною енергією. Йдеться про будівництво когенераційної станції та сучасної котельні, інтегрованих у міську інфраструктуру.' }, en: { title: 'Cogeneration Plant and Boiler House', category: 'Energy', location: 'Teplodar', metrics: ['Efficiency 85-90%', 'Budget $3.4M', 'Heat + Power'], description: 'The project is aimed at creating a next-generation local energy complex that will provide the city with stable thermal and electrical energy. It involves the construction of a cogeneration plant and a modern boiler house integrated into the city infrastructure.' } },
+          { id: 11, image: 'images/malodolynske.jpg', uk: { title: 'ІНДУСТРІАЛЬНИЙ ПАРК МАЛОДОЛІНСЬКЕ', category: 'Інфраструктура', location: 'Чорноморськ', metrics: ['16.9 га', 'Індустріальний парк', 'Залізнична колія'], description: 'Земельна ділянка для створення індустріального парку. Залізнична колія на ділянці + 4 км до траси P70 + близькість до портового кластеру Чорноморська. Рідкісна конфігурація для логістики та виробництва.' }, en: { title: 'MALODOLYNSKE INDUSTRIAL PARK', category: 'Infrastructure', location: 'Chornomorsk', metrics: ['16.9 ha', 'Industrial Park', 'Railway line'], description: 'Land plot for the creation of an industrial park. Railway track on site + 4 km to the P70 highway + proximity to the Chornomorsk port cluster. A rare configuration for logistics and production.' } },
+          { id: 12, image: 'images/mriya.jpg', uk: { title: 'Приватна Онлайн-Школа', category: 'Освіта', location: 'Україна + Діаспора', metrics: ['1000+ учнів', 'Ліцензія МОН', 'AI-асистент'], description: 'Створення масштабованої приватної онлайн-школи, що працює відповідно до стандартів МОН України та забезпечує повний цикл середньої освіти з видачею атестата державного зразка.' }, en: { title: 'Private Online School', category: 'Education', location: 'Ukraine + Diaspora', metrics: ['1000+ students', 'MES License', 'AI-assistant'], description: 'Creation of a scalable private online school that operates in accordance with the standards of the Ministry of Education and Science of Ukraine and provides a full cycle of secondary education with the issuance of a state-recognized certificate.' } }
+        ];
+
+        function App() {
+          const [lang, setLang] = useState('uk');
+          const [isModalOpen, setIsModalOpen] = useState(false);
+          const [formStatus, setFormStatus] = useState(null);
+          const t = dict[lang];
+
+          const categories = [t.filterAll, ...new Set(projects.map(p => p[lang].category))];
+          const [filter, setFilter] = useState(t.filterAll);
+
+          const filteredProjects = filter === t.filterAll 
+            ? projects 
+            : projects.filter(p => p[lang].category === filter);
+
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            setFormStatus('sending');
+            const form = e.target;
+            const data = new FormData(form);
+
+            try {
+                const response = await fetch("https://formspree.io/f/meevlnvo", {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    setFormStatus('success');
+                    form.reset();
+                    setTimeout(() => {
+                        setIsModalOpen(false);
+                        setFormStatus(null);
+                    }, 3000);
+                } else {
+                    setFormStatus('error');
+                }
+            } catch (err) {
+                setFormStatus('error');
+            }
+          };
+
+          return (
+            <div className={`min-h-screen bg-[#101010] text-[#d1d5db] font-sans selection:bg-[#D4AF37]/30 ${isModalOpen ? 'overflow-hidden' : ''}`}>
+              
+              {/* --- NAV --- */}
+              <nav className="fixed w-full z-50 bg-[#101010]/90 backdrop-blur-md border-b border-white/5">
+                <div className="max-w-[1400px] mx-auto px-6 h-[100px] md:h-[130px] flex justify-between items-center">
+                  <a href="#" className="flex items-center hover:opacity-80 transition-opacity">
+                    <img 
+                      src="images/logo.png" 
+                      alt="Bracha Capitals Logo" 
+                      className="h-24 md:h-32 object-contain" 
+                      onError={(e) => { 
+                        if (e.target.src.includes('.png')) {
+                            e.target.src = 'images/logo.jpg';
+                        } else {
+                            e.target.style.display = 'none'; 
+                            e.target.nextSibling.style.display = 'block'; 
+                        }
+                      }} 
+                    />
+                    <div className="hidden text-xl md:text-2xl font-serif font-bold tracking-widest text-[#D4AF37] uppercase ml-4">
+                      Bracha Capitals
+                    </div>
+                  </a>
+                  
+                  <div className="hidden lg:flex items-center space-x-10 text-[13px] text-[#a1a1aa] font-medium tracking-wide">
+                    <a href="#strategy" className="hover:text-white transition-colors">{t.nav.strategy}</a>
+                    <a href="#portfolio" className="hover:text-white transition-colors">{t.nav.portfolio}</a>
+                  </div>
+                  
+                  <div className="flex items-center space-x-6">
+                    <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10 text-[11px] font-bold">
+                      <button onClick={() => setLang('uk')} className={`px-3 py-1 rounded-full transition-colors ${lang === 'uk' ? 'bg-[#D4AF37] text-black' : 'text-white/50 hover:text-white'}`}>UK</button>
+                      <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full transition-colors ${lang === 'en' ? 'bg-[#D4AF37] text-black' : 'text-white/50 hover:text-white'}`}>EN</button>
+                    </div>
+                    <button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="hidden md:block text-[13px] text-[#D4AF37] font-medium border border-[#D4AF37] px-6 py-2.5 rounded hover:bg-[#D4AF37] hover:text-black transition-colors"
+                    >
+                      {t.nav.contact}
+                    </button>
+                  </div>
+                </div>
+              </nav>
+
+              {/* --- HERO --- */}
+              <section className="relative pt-[200px] md:pt-[280px] pb-32 px-6 overflow-hidden bg-[#101010]">
+                <div className="absolute inset-0 z-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#101010] via-[#101010]/80 to-transparent z-10"></div>
+                
+                <div className="relative z-10 max-w-[1400px] mx-auto fade-in">
+                  <div className="max-w-4xl">
+                    <div className="flex items-center space-x-3 text-[#D4AF37] text-[11px] font-bold tracking-[0.15em] uppercase mb-8">
+                      <span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span>
+                      <span>{t.hero.badge}</span>
+                    </div>
+
+                    <h1 className="text-[56px] md:text-[84px] font-serif leading-[1.05] tracking-tight mb-8">
+                      <span className="text-white block">{t.hero.titleWhite}</span>
+                      <span className="text-[#D4AF37] block">{t.hero.titleGold}</span>
+                    </h1>
+
+                    <p className="text-lg md:text-xl text-[#a1a1aa] font-light leading-relaxed max-w-2xl mb-12">
+                      {t.hero.desc}
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-5">
+                      <a href="#portfolio" className="flex items-center justify-center bg-[#f4f4f5] text-black px-8 py-4 rounded font-medium text-[15px] hover:bg-white transition-colors">
+                        {t.hero.btnPortfolio} <ArrowUpRight className="ml-2 w-4 h-4" />
+                      </a>
+                      <a href="#strategy" className="flex items-center justify-center border border-white/20 text-white px-8 py-4 rounded font-medium text-[15px] hover:bg-white/5 transition-colors">
+                        {t.hero.btnStrategy}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* --- STRATEGY --- */}
+              <section id="strategy" className="py-24 bg-[#0d0d0d] border-t border-white/5">
+                <div className="max-w-[1400px] mx-auto px-6">
+                  <div className="mb-16">
+                    <h2 className="text-[#D4AF37] text-[11px] font-bold tracking-[0.2em] uppercase mb-4">{t.strategy.subtitle}</h2>
+                    <h3 className="text-4xl font-serif text-white">{t.strategy.title}</h3>
+                  </div>
+                  <div className="grid md:grid-cols-3 gap-8">
+                    {t.strategy.items.map((item, index) => (
+                      <div key={index} className="bg-[#151515] border border-white/5 rounded-xl p-8 hover:border-[#D4AF37]/30 transition-all duration-300">
+                        <div className="text-5xl font-serif text-white/5 font-bold mb-6">0{index + 1}</div>
+                        <h4 className="text-xl font-serif text-white mb-4">{item.title}</h4>
+                        <p className="text-[#a1a1aa] font-light leading-relaxed text-sm">{item.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* --- PORTFOLIO --- */}
+              <section id="portfolio" className="py-24 bg-[#101010] border-t border-white/5">
+                <div className="max-w-[1400px] mx-auto px-6">
+                  <h2 className="text-4xl font-serif text-white mb-12">{t.portfolioTitle}</h2>
+                  <div className="flex flex-wrap gap-3 mb-16">
+                    {categories.map(cat => (
+                      <button key={cat} onClick={() => setFilter(cat)} className={`px-5 py-2.5 rounded-full text-[13px] font-medium transition-all duration-300 border ${filter === cat ? 'bg-[#D4AF37] border-[#D4AF37] text-black' : 'bg-transparent border-white/10 text-[#a1a1aa] hover:border-white/30 hover:text-white'}`}>{cat}</button>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    {filteredProjects.map(project => (
+                      <div key={project.id} className="group bg-[#18181b] border border-white/5 rounded-xl overflow-hidden hover:border-[#D4AF37]/40 transition-all duration-500 flex flex-col">
+                        <div className="relative h-64 overflow-hidden bg-[#27272a]">
+                          <img src={project.image} alt={project[lang].title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                          <div className="hidden absolute inset-0 flex-col items-center justify-center p-6 text-center text-white/20 text-xs">Image Placeholder: {project.image}</div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#18181b] to-transparent opacity-80" />
+                          <div className="absolute top-5 left-5"><span className="px-3 py-1.5 bg-black/60 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest rounded border border-white/10">{project[lang].category}</span></div>
+                        </div>
+                        <div className="p-8 flex-1 flex flex-col">
+                          <div className="flex items-center text-[#D4AF37] text-[11px] font-bold tracking-widest uppercase mb-3"><MapPin className="w-3.5 h-3.5 mr-2" />{project[lang].location}</div>
+                          <h3 className="text-2xl font-serif text-white mb-4 group-hover:text-[#D4AF37] transition-colors">{project[lang].title}</h3>
+                          <p className="text-[#a1a1aa] text-sm font-light leading-relaxed mb-8 flex-1">{project[lang].description}</p>
+                          <div className="pt-6 border-t border-white/5 flex flex-wrap gap-2">
+                            {project[lang].metrics.map((metric, idx) => (
+                              <div key={idx} className="px-3 py-1.5 rounded bg-white/5 border border-white/5 text-[11px] font-medium text-white/80">{metric}</div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* --- CTA SECTION --- */}
+              <section className="py-24 bg-[#D4AF37] text-black">
+                  <div className="max-w-[1400px] mx-auto px-6 text-center">
+                      <h2 className="text-[42px] font-serif font-bold mb-6">{t.cta.title}</h2>
+                      <p className="text-lg opacity-80 max-w-2xl mx-auto mb-10 font-medium">
+                          {t.cta.desc}
+                      </p>
+                      <button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-black text-white px-10 py-5 rounded font-bold uppercase tracking-widest text-[13px] hover:bg-neutral-900 transition-colors shadow-2xl"
+                      >
+                          {t.cta.btn}
+                      </button>
+                  </div>
+              </section>
+
+              {/* --- FOOTER --- */}
+              <footer className="py-24 bg-[#0a0a0a]">
+                <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+                  <div className="mb-12 md:mb-0 flex items-center">
+                    <img 
+                      src="images/logo.png" 
+                      alt="Bracha Capitals Logo" 
+                      className="h-32 md:h-52 object-contain hover:scale-105 transition-transform duration-500" 
+                      onError={(e) => { 
+                        if (e.target.src.includes('.png')) {
+                            e.target.src = 'images/logo.jpg';
+                        } else {
+                            e.target.style.display = 'none'; 
+                            e.target.nextSibling.style.display = 'block'; 
+                        }
+                      }} 
+                    />
+                    <div className="hidden text-xl font-serif font-bold tracking-widest text-[#D4AF37] uppercase">Bracha Capitals</div>
+                  </div>
+                  <div className="text-[14px] text-[#a1a1aa] font-medium tracking-wide text-center md:text-right">
+                    © 2024 BRACHA CAPITALS.<br className="md:hidden" /> All rights reserved.
+                  </div>
+                </div>
+              </footer>
+
+              {/* --- MODAL FORM --- */}
+              {isModalOpen && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 modal-overlay">
+                      <div className="bg-[#151515] border border-white/10 w-full max-w-xl rounded-2xl relative shadow-2xl">
+                          <button 
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute top-6 right-6 text-white/30 hover:text-white transition-colors"
+                          >
+                              <XIcon className="w-6 h-6" />
+                          </button>
+
+                          <div className="p-10 md:p-12">
+                              <h3 className="text-3xl font-serif text-white mb-8">{t.modal.title}</h3>
+                              
+                              {formStatus === 'success' ? (
+                                  <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-6 rounded-xl text-center">
+                                      {t.modal.success}
+                                  </div>
+                              ) : (
+                                  <form onSubmit={handleSubmit} className="space-y-6">
+                                      <input type="hidden" name="_language" value={lang} />
+                                      <div>
+                                          <label className="block text-[11px] font-bold uppercase tracking-widest text-white/40 mb-2">{t.modal.name}</label>
+                                          <input required name="name" type="text" className="w-full px-5 py-4 rounded-lg" placeholder="Ваше ім'я" />
+                                      </div>
+                                      <div>
+                                          <label className="block text-[11px] font-bold uppercase tracking-widest text-white/40 mb-2">{t.modal.email}</label>
+                                          <input required name="email" type="email" className="w-full px-5 py-4 rounded-lg" placeholder="email@example.com" />
+                                      </div>
+                                      <div>
+                                          <label className="block text-[11px] font-bold uppercase tracking-widest text-white/40 mb-2">{t.modal.msg}</label>
+                                          <textarea required name="message" rows="4" className="w-full px-5 py-4 rounded-lg resize-none" placeholder="..."></textarea>
+                                      </div>
+                                      
+                                      <button 
+                                        disabled={formStatus === 'sending'}
+                                        type="submit" 
+                                        className="w-full bg-[#D4AF37] text-black font-bold py-5 rounded-lg uppercase tracking-widest text-[13px] hover:bg-[#b8952d] transition-all disabled:opacity-50"
+                                      >
+                                          {formStatus === 'sending' ? '...' : t.modal.send}
+                                      </button>
+
+                                      {formStatus === 'error' && (
+                                          <p className="text-red-400 text-xs text-center">{t.modal.error}</p>
+                                      )}
+                                  </form>
+                              )}
+                          </div>
+                      </div>
+                  </div>
+              )}
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
